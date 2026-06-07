@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dan Lougen — Post-Training Research · Agent Infrastructure · Open Weights</title>
+<meta name="description" content="AI research portfolio of Dan Lougen — post-training methods, agent infrastructure, and open-weight model development at Gestalt Labs.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Soro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg-deep: #08090d;
+  --bg-card: #12141c;
+  --bg-border: #1a1d2a;
+  --gold: #d4a843;
+  --teal: #4ecdc4;
+  --text: #d8dae0;
+  --muted: #6b7084;
+  --red: #e8564a;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-sans: 'Soro', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg-deep);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-weight: 400;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+a { color: var(--teal); text-decoration: none; transition: color 0.2s; }
+a:hover { color: var(--gold); }
+
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+/* === NAV === */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(8,9,13,0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--bg-border);
+}
+nav .container {
+  display: flex; align-items: center; justify-content: space-between;
+  height: 56px;
+}
+nav .logo {
+  font-family: var(--font-mono); font-weight: 600; font-size: 15px;
+  color: var(--gold);
+}
+nav .links { display: flex; gap: 24px; }
+nav .links a {
+  font-family: var(--font-mono); font-size: 13px; color: var(--muted);
+  transition: color 0.2s;
+}
+nav .links a:hover { color: var(--text); }
+
+/* === HERO === */
+.hero {
+  min-height: 100vh; display: flex; align-items: center;
+  padding-top: 56px; position: relative; overflow: hidden;
+}
+.hero-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 48px;
+  align-items: center; width: 100%;
+}
+.hero-text h1 {
+  font-family: var(--font-mono); font-size: clamp(28px, 4vw, 48px);
+  font-weight: 700; line-height: 1.15; color: var(--text);
+  margin-bottom: 16px;
+}
+.hero-text h1 span { color: var(--gold); }
+.hero-text .subtitle {
+  font-family: var(--font-mono); font-size: 14px; color: var(--muted);
+  margin-bottom: 24px; letter-spacing: 0.5px;
+}
+.hero-badges {
+  display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 32px;
+}
+.badge {
+  font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+  padding: 4px 12px; border-radius: 4px;
+  border: 1px solid var(--bg-border); color: var(--muted);
+  background: var(--bg-card);
+}
+.badge.gold { border-color: rgba(212,168,67,0.3); color: var(--gold); }
+.badge.teal { border-color: rgba(78,205,196,0.3); color: var(--teal); }
+
+.hero-canvas-wrap {
+  position: relative; width: 100%; aspect-ratio: 4/3;
+  border-radius: 8px; overflow: hidden;
+  border: 1px solid var(--bg-border);
+  background: rgba(18,20,28,0.5);
+}
+#spectralCanvas { width: 100%; height: 100%; display: block; }
+
+.stat-bar {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+  margin-top: 48px; padding-top: 32px;
+  border-top: 1px solid var(--bg-border);
+}
+.stat-item { text-align: center; }
+.stat-value {
+  font-family: var(--font-mono); font-size: clamp(20px, 3vw, 32px);
+  font-weight: 700; color: var(--gold);
+  font-variant-numeric: tabular-nums;
+}
+.stat-label {
+  font-family: var(--font-mono); font-size: 11px; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 1px; margin-top: 4px;
+}
+
+/* === SECTIONS === */
+section { padding: 96px 0; }
+.section-label {
+  font-family: var(--font-mono); font-size: 12px; font-weight: 500;
+  color: var(--gold); text-transform: uppercase; letter-spacing: 2px;
+  margin-bottom: 12px;
+}
+.section-title {
+  font-family: var(--font-mono); font-size: clamp(22px, 3vw, 36px);
+  font-weight: 700; margin-bottom: 48px; color: var(--text);
+}
+
+/* === RESEARCH CARDS === */
+.research-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+}
+.research-card {
+  background: var(--bg-card); border: 1px solid var(--bg-border);
+  border-radius: 8px; padding: 32px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  position: relative; overflow: hidden;
+}
+.research-card:hover {
+  border-color: rgba(212,168,67,0.4);
+  box-shadow: 0 0 30px rgba(212,168,67,0.08);
+}
+.research-card h3 {
+  font-family: var(--font-mono); font-size: 20px; font-weight: 700;
+  color: var(--gold); margin-bottom: 8px;
+}
+.research-card .tagline {
+  font-family: var(--font-mono); font-size: 12px; color: var(--teal);
+  margin-bottom: 16px;
+}
+.research-card p { font-size: 14px; color: var(--muted); line-height: 1.7; }
+.research-card .links { margin-top: 20px; display: flex; gap: 16px; }
+.research-card .links a {
+  font-family: var(--font-mono); font-size: 12px; font-weight: 500;
+}
+
+/* === SELFTRACE FEATURED === */
+.selftrace {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid rgba(212,168,67,0.3);
+  border-radius: 12px;
+  padding: 48px;
+  overflow: hidden;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.selftrace:hover {
+  border-color: rgba(212,168,67,0.6);
+  box-shadow: 0 0 40px rgba(212,168,67,0.1);
+}
+.selftrace::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), var(--teal), transparent);
+}
+.selftrace-header {
+  display: flex; align-items: baseline; gap: 16px;
+  margin-bottom: 8px; flex-wrap: wrap;
+}
+.selftrace-header h3 {
+  font-family: var(--font-mono); font-size: clamp(24px, 3vw, 32px);
+  font-weight: 700; color: var(--gold);
+}
+.selftrace-tag {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 1.5px;
+  padding: 3px 10px; border-radius: 3px;
+  background: rgba(232,86,74,0.12); color: var(--red);
+  border: 1px solid rgba(232,86,74,0.25);
+}
+.selftrace .tagline {
+  font-family: var(--font-mono); font-size: 14px; color: var(--teal);
+  margin-bottom: 20px;
+}
+.selftrace p.desc {
+  font-size: 15px; color: var(--muted); line-height: 1.8;
+  max-width: 720px; margin-bottom: 28px;
+}
+.selftrace-features {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px; margin-bottom: 28px;
+}
+.selftrace-feat {
+  padding: 16px; border-radius: 6px;
+  background: rgba(8,9,13,0.5);
+  border: 1px solid var(--bg-border);
+}
+.selftrace-feat h4 {
+  font-family: var(--font-mono); font-size: 13px; font-weight: 600;
+  color: var(--text); margin-bottom: 6px;
+}
+.selftrace-feat p {
+  font-size: 12px; color: var(--muted); line-height: 1.5;
+}
+.selftrace-cta {
+  display: inline-block;
+  font-family: var(--font-mono); font-size: 13px; font-weight: 600;
+  padding: 10px 28px; border-radius: 6px;
+  background: rgba(212,168,67,0.12); color: var(--gold);
+  border: 1px solid rgba(212,168,67,0.35);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.selftrace-cta:hover {
+  background: rgba(212,168,67,0.2);
+  box-shadow: 0 0 20px rgba(212,168,67,0.15);
+  color: var(--gold);
+}
+@media (max-width: 768px) {
+  .selftrace { padding: 28px; }
+}
+/* === MODEL CARDS === */
+.models-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 20px;
+}
+.model-card {
+  background: var(--bg-card); border: 1px solid var(--bg-border);
+  border-radius: 8px; padding: 24px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.model-card:hover {
+  border-color: rgba(78,205,196,0.4);
+  box-shadow: 0 0 24px rgba(78,205,196,0.06);
+}
+.model-card .model-name {
+  font-family: var(--font-mono); font-size: 14px; font-weight: 600;
+  color: var(--text); margin-bottom: 12px;
+  word-break: break-all;
+}
+.model-card .model-arch {
+  font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+  padding: 3px 8px; border-radius: 3px; display: inline-block;
+  margin-bottom: 16px;
+  background: rgba(78,205,196,0.1); color: var(--teal);
+  border: 1px solid rgba(78,205,196,0.2);
+}
+.model-stats { display: flex; gap: 24px; }
+.model-stat { display: flex; flex-direction: column; }
+.model-stat-val {
+  font-family: var(--font-mono); font-size: 16px; font-weight: 600;
+  color: var(--text); font-variant-numeric: tabular-nums;
+}
+.model-stat-label {
+  font-family: var(--font-mono); font-size: 10px; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.model-card .model-link {
+  margin-top: 16px; display: block;
+  font-family: var(--font-mono); font-size: 12px;
+}
+
+/* === INFRASTRUCTURE === */
+.infra-diagram {
+  display: flex; flex-direction: column; gap: 24px; align-items: center;
+}
+.infra-root {
+  background: var(--bg-card); border: 2px solid var(--gold);
+  border-radius: 8px; padding: 24px 40px; text-align: center;
+}
+.infra-root h3 {
+  font-family: var(--font-mono); font-size: 20px; font-weight: 700;
+  color: var(--gold);
+}
+.infra-root p { font-size: 13px; color: var(--muted); margin-top: 4px; }
+.infra-connector {
+  width: 2px; height: 32px;
+  background: linear-gradient(to bottom, var(--gold), var(--bg-border));
+}
+.infra-children {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px; width: 100%;
+}
+.infra-card {
+  background: var(--bg-card); border: 1px solid var(--bg-border);
+  border-radius: 8px; padding: 24px;
+  transition: border-color 0.3s;
+  position: relative;
+}
+.infra-card:hover { border-color: rgba(78,205,196,0.4); }
+.infra-card h4 {
+  font-family: var(--font-mono); font-size: 16px; font-weight: 600;
+  color: var(--teal); margin-bottom: 8px;
+}
+.infra-card p { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+.infra-metric {
+  font-family: var(--font-mono); font-size: 22px; font-weight: 700;
+  color: var(--gold); font-variant-numeric: tabular-nums;
+}
+.infra-metric-label {
+  font-family: var(--font-mono); font-size: 10px; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+
+/* === DATASETS === */
+.datasets-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+.dataset-card {
+  background: var(--bg-card); border: 1px solid var(--bg-border);
+  border-radius: 6px; padding: 20px;
+  transition: border-color 0.3s;
+}
+.dataset-card:hover { border-color: rgba(212,168,67,0.3); }
+.dataset-card h4 {
+  font-family: var(--font-mono); font-size: 14px; font-weight: 600;
+  color: var(--text); margin-bottom: 6px;
+}
+.dataset-card .ds-meta {
+  font-family: var(--font-mono); font-size: 11px; color: var(--muted);
+}
+.dataset-card a { display: block; margin-top: 10px; font-family: var(--font-mono); font-size: 12px; }
+
+/* === CONNECT === */
+.connect-section { text-align: center; }
+.connect-links {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 16px;
+  margin-bottom: 40px;
+}
+.connect-btn {
+  font-family: var(--font-mono); font-size: 13px; font-weight: 500;
+  padding: 10px 24px; border-radius: 6px;
+  border: 1px solid var(--bg-border); color: var(--text);
+  background: var(--bg-card);
+  transition: border-color 0.3s, color 0.3s, box-shadow 0.3s;
+  display: inline-block;
+}
+.connect-btn:hover {
+  border-color: var(--gold); color: var(--gold);
+  box-shadow: 0 0 20px rgba(212,168,67,0.1);
+}
+.connect-email {
+  font-family: var(--font-mono); font-size: 14px; color: var(--muted);
+  margin-bottom: 48px;
+}
+.connect-email a { color: var(--gold); }
+
+/* === FOOTER === */
+footer {
+  border-top: 1px solid var(--bg-border); padding: 32px 0;
+  text-align: center;
+}
+footer p {
+  font-family: var(--font-mono); font-size: 11px; color: var(--muted);
+}
+
+/* === SCROLL REVEAL === */
+.reveal {
+  opacity: 0; transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  .hero-grid { grid-template-columns: 1fr; }
+  .hero-canvas-wrap { max-height: 280px; }
+  .stat-bar { grid-template-columns: repeat(2, 1fr); }
+  nav .links { gap: 14px; }
+  nav .links a { font-size: 11px; }
+  .research-grid { grid-template-columns: 1fr; }
+  .models-grid { grid-template-columns: 1fr; }
+  .infra-children { grid-template-columns: 1fr; }
+  .datasets-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .stat-bar { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .hero-text h1 { font-size: 24px; }
+  section { padding: 64px 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="container">
+    <div class="logo">djlougen</div>
+    <div class="links">
+      <a href="#research">Research</a>
+      <a href="#selftrace">SelfTrace</a>
+      <a href="#models">Models</a>
+      <a href="#infrastructure">Infrastructure</a>
+      <a href="#datasets">Datasets</a>
+      <a href="#connect">Connect</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-grid">
+      <div class="hero-text">
+        <h1>Dan <span>Lougen</span></h1>
+        <p class="subtitle">Post-Training Research · Agent Infrastructure · Open Weights</p>
+        <div class="hero-badges">
+          <span class="badge gold">Gestalt Labs</span>
+          <span class="badge teal">Qwen Ambassador</span>
+          <span class="badge">University of Toronto</span>
+        </div>
+      </div>
+      <div class="hero-canvas-wrap">
+        <canvas id="spectralCanvas"></canvas>
+      </div>
+    </div>
+    <div class="stat-bar">
+      <div class="stat-item">
+        <div class="stat-value">29</div>
+        <div class="stat-label">Models Published</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">20K+</div>
+        <div class="stat-label">Downloads</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">30</div>
+        <div class="stat-label">Repos</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">4</div>
+        <div class="stat-label">Team Members</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RESEARCH -->
+<section id="research">
+  <div class="container">
+    <div class="reveal">
+      <p class="section-label">// Research</p>
+      <h2 class="section-title">Methods & Architecture</h2>
+    </div>
+    <div class="research-grid">
+      <div class="research-card reveal">
+        <h3>SABER</h3>
+        <p class="tagline">Spectral Analysis-Based Entanglement Resolution</p>
+        <p>CCA-based surgical refusal editing in post-trained models. Decomposes refusal behaviors into spectral components, enabling precise editing without collateral capability loss. Applied across Qwen, Ornstein, and Harmonic model families.</p>
+        <div class="links">
+          <a href="https://github.com/DJLougen" target="_blank" rel="noopener">GitHub →</a>
+        </div>
+      </div>
+      <div class="research-card reveal">
+        <h3>NSC-ACE</h3>
+        <p class="tagline">GRPO + Latent Steering Vectors</p>
+        <p>Neural Steering via Controlled Activation — Contextual Embedding. Combines Group Relative Policy Optimization with latent steering vectors for improved instruction-following and controllability in open-weight models.</p>
+        <div class="links">
+          <a href="https://github.com/DJLougen" target="_blank" rel="noopener">GitHub →</a>
+        </div>
+      </div>
+      <div class="research-card reveal">
+        <h3>BOREAL</h3>
+        <p class="tagline">From-Scratch Pretraining · DeltaNet Hybrid</p>
+        <p>Building foundation models from the ground up with DeltaNet hybrid architecture. Scaling path: 250M → 2B → 10B-MoE. Focused on efficient attention mechanisms and novel training curricula for open-weight pretraining.</p>
+        <div class="links">
+          <a href="https://github.com/DJLougen" target="_blank" rel="noopener">GitHub →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SELFTRACE -->
+<section id="selftrace">
+  <div class="container">
+    <div class="reveal">
+      <p class="section-label">// Product</p>
+      <h2 class="section-title">SelfTrace</h2>
+    </div>
+    <div class="selftrace reveal">
+      <div class="selftrace-header">
+        <h3>SelfTrace</h3>
+        <span class="selftrace-tag">Proprietary</span>
+      </div>
+      <p class="tagline">Full-stack AI agent observability & introspection</p>
+      <p class="desc">SelfTrace is a commercial tracing and introspection platform for AI agent systems. It provides deep visibility into agent decision-making, tool-call chains, and state transitions — enabling teams to debug, audit, and optimize autonomous agent behavior in production.</p>
+      <div class="selftrace-features">
+        <div class="selftrace-feat">
+          <h4>Agent Trace Visualization</h4>
+          <p>Full execution traces with tool calls, LLM generations, and branching logic rendered as interactive timelines.</p>
+        </div>
+        <div class="selftrace-feat">
+          <h4>State Introspection</h4>
+          <p>Inspect agent memory, context windows, and intermediate representations at any point in the execution graph.</p>
+        </div>
+        <div class="selftrace-feat">
+          <h4>Performance Profiling</h4>
+          <p>Latency breakdown, token cost attribution, and bottleneck detection across multi-step agent workflows.</p>
+        </div>
+        <div class="selftrace-feat">
+          <h4>Production Monitoring</h4>
+          <p>Real-time dashboards and alerting for deployed agent systems. Anomaly detection on trace patterns.</p>
+        </div>
+      </div>
+      <a class="selftrace-cta" href="mailto:lougen.mindweaver@pm.me?subject=SelfTrace%20Inquiry">Request Access →</a>
+    </div>
+  </div>
+</section>
+
+<!-- MODELS -->
+<section id="models">
+  <div class="container">
+    <div class="reveal">
+      <p class="section-label">// Models</p>
+      <h2 class="section-title">Open-Weight Releases</h2>
+    </div>
+    <div class="models-grid">
+      <div class="model-card reveal">
+        <div class="model-name">Qwen3.6-35B-A3B-NSC-ACE-SABER-GGUF-MTP</div>
+        <span class="model-arch">Qwen3 MoE · 35B-A3B</span>
+        <div class="model-stats">
+          <div class="model-stat">
+            <span class="model-stat-val">11,300</span>
+            <span class="model-stat-label">Downloads</span>
+          </div>
+          <div class="model-stat">
+            <span class="model-stat-val">14</span>
+            <span class="model-stat-label">Likes</span>
+          </div>
+        </div>
+        <a class="model-link" href="https://huggingface.co/DJLougen" target="_blank" rel="noopener">View on HuggingFace →</a>
+      </div>
+      <div class="model-card reveal">
+        <div class="model-name">Harmonic-Hermes-9B-GGUF</div>
+        <span class="model-arch">Hermes · 9B</span>
+        <div class="model-stats">
+          <div class="model-stat">
+            <span class="model-stat-val">2,600</span>
+            <span class="model-stat-label">Downloads</span>
+          </div>
+          <div class="model-stat">
+            <span class="model-stat-val">61</span>
+            <span class="model-stat-label">Likes</span>
+          </div>
+        </div>
+        <a class="model-link" href="https://huggingface.co/DJLougen" target="_blank" rel="noopener">View on HuggingFace →</a>
+      </div>
+      <div class="model-card reveal">
+        <div class="model-name">Ornstein3.6-27B-MTP-NSC-ACE-SABER-GGUF</div>
+        <span class="model-arch">Ornstein · 27B</span>
+        <div class="model-stats">
+          <div class="model-stat">
+            <span class="model-stat-val">6,000</span>
+            <span class="model-stat-label">Downloads</span>
+          </div>
+          <div class="model-stat">
+            <span class="model-stat-val">11</span>
+            <span class="model-stat-label">Likes</span>
+          </div>
+        </div>
+        <a class="model-link" href="https://huggingface.co/DJLougen" target="_blank" rel="noopener">View on HuggingFace →</a>
+      </div>
+      <div class="model-card reveal">
+        <div class="model-name">Ornstein-Hermes-3.6-27b-SABER-GGUF</div>
+        <span class="model-arch">Ornstein-Hermes · 27B</span>
+        <div class="model-stats">
+          <div class="model-stat">
+            <span class="model-stat-val">873</span>
+            <span class="model-stat-label">Downloads</span>
+          </div>
+          <div class="model-stat">
+            <span class="model-stat-val">18</span>
+            <span class="model-stat-label">Likes</span>
+          </div>
+        </div>
+        <a class="model-link" href="https://huggingface.co/DJLougen" target="_blank" rel="noopener">View on HuggingFace →</a>
+      </div>
+      <div class="model-card reveal">
+        <div class="model-name">Ornstein3.6-35B-A3B-GGUF</div>
+        <span class="model-arch">Ornstein MoE · 35B-A3B</span>
+        <div class="model-stats">
+          <div class="model-stat">
+            <span class="model-stat-val">1,490</span>
+            <span class="model-stat-label">Downloads</span>
+          </div>
+          <div class="model-stat">
+            <span class="model-stat-val">40</span>
+            <span class="model-stat-label">Likes</span>
+          </div>
+        </div>
+        <a class="model-link" href="https://huggingface.co/DJLougen" target="_blank" rel="noopener">View on HuggingFace →</a>
+      </div>
+      <div class="model-card reveal">
+        <div class="model-name">Qwen3.5-9B-NSC-ACE-SABER-GGUF</div>
+        <span class="model-arch">Qwen3.5 · 9B</span>
+        <div class="model-stats">
+          <div class="model-stat">
+            <span class="model-stat-val">645</span>
+            <span class="model-stat-label">Downloads</span>
+          </div>
+          <div class="model-stat">
+            <span class="model-stat-val">5</span>
+            <span class="model-stat-label">Likes</span>
+          </div>
+        </div>
+        <a class="model-link" href="https://huggingface.co/DJLougen" target="_blank" rel="noopener">View on HuggingFace →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INFRASTRUCTURE -->
+<section id="infrastructure">
+  <div class="container">
+    <div class="reveal">
+      <p class="section-label">// Infrastructure</p>
+      <h2 class="section-title">The Stack</h2>
+    </div>
+    <div class="infra-diagram reveal">
+      <div class="infra-root">
+        <h3>HiveStack</h3>
+        <p>Agent orchestration layer — coordinates distributed inference and training pipelines</p>
+      </div>
+      <div class="infra-connector"></div>
+      <div class="infra-children">
+        <div class="infra-card">
+          <h4>busyBee-cpu</h4>
+          <p>High-throughput routing engine for distributed agent workloads. Lock-free concurrent request handling.</p>
+          <div class="infra-metric">2.06M</div>
+          <div class="infra-metric-label">Routes / sec</div>
+        </div>
+        <div class="infra-card">
+          <h4>honey-comb</h4>
+          <p>Extreme compression for model artifacts and agent state. Purpose-built for GGUF and safetensor payloads.</p>
+          <div class="infra-metric">803×</div>
+          <div class="infra-metric-label">Compression ratio</div>
+        </div>
+        <div class="infra-card">
+          <h4>Rust-Brain</h4>
+          <p>Persistent memory backend with .rbmem binary format. Zero-copy deserialization for agent context windows.</p>
+          <div class="infra-metric">315K</div>
+          <div class="infra-metric-label">Writes / sec</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DATASETS -->
+<section id="datasets">
+  <div class="container">
+    <div class="reveal">
+      <p class="section-label">// Datasets</p>
+      <h2 class="section-title">Curated Data</h2>
+    </div>
+    <div class="datasets-grid">
+      <div class="dataset-card reveal">
+        <h4>Acta</h4>
+        <p class="ds-meta">5K samples · 115 downloads</p>
+        <a href="https://huggingface.co/datasets/DJLougen" target="_blank" rel="noopener">View →</a>
+      </div>
+      <div class="dataset-card reveal">
+        <h4>ornstein-curated-100k</h4>
+        <p class="ds-meta">100K samples · SFT training data</p>
+        <a href="https://huggingface.co/datasets/DJLougen" target="_blank" rel="noopener">View →</a>
+      </div>
+      <div class="dataset-card reveal">
+        <h4>Talos-Scenarios</h4>
+        <p class="ds-meta">Scenario-based evaluation data</p>
+        <a href="https://huggingface.co/datasets/DJLougen" target="_blank" rel="noopener">View →</a>
+      </div>
+      <div class="dataset-card reveal">
+        <h4>chimera-curated-68k</h4>
+        <p class="ds-meta">68K samples · Multi-domain SFT</p>
+        <a href="https://huggingface.co/datasets/DJLougen" target="_blank" rel="noopener">View →</a>
+      </div>
+      <div class="dataset-card reveal">
+        <h4>persona-relationship-sft</h4>
+        <p class="ds-meta">Character consistency training</p>
+        <a href="https://huggingface.co/datasets/DJLougen" target="_blank" rel="noopener">View →</a>
+      </div>
+      <div class="dataset-card reveal">
+        <h4>greatnorth-us-federal-laws-text</h4>
+        <p class="ds-meta">403K samples · Legal corpus</p>
+        <a href="https://huggingface.co/datasets/GestaltLabs" target="_blank" rel="noopener">View →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONNECT -->
+<section id="connect">
+  <div class="container connect-section">
+    <div class="reveal">
+      <p class="section-label">// Connect</p>
+      <h2 class="section-title">Get in Touch</h2>
+    </div>
+    <div class="connect-links reveal">
+      <a class="connect-btn" href="https://github.com/DJLougen" target="_blank" rel="noopener">GitHub</a>
+      <a class="connect-btn" href="https://huggingface.co/DJLougen" target="_blank" rel="noopener">HuggingFace</a>
+      <a class="connect-btn" href="https://huggingface.co/GestaltLabs" target="_blank" rel="noopener">Gestalt Labs HF</a>
+      <a class="connect-btn" href="https://scholar.google.com" target="_blank" rel="noopener">Google Scholar</a>
+      <a class="connect-btn" href="https://orcid.org" target="_blank" rel="noopener">ORCID</a>
+      <a class="connect-btn" href="https://ko-fi.com/djlougen" target="_blank" rel="noopener">Ko-fi</a>
+    </div>
+    <p class="connect-email reveal">
+      <a href="mailto:lougen.mindweaver@pm.me">lougen.mindweaver@pm.me</a>
+    </p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <p>Built with vanilla HTML, CSS & JS · Hosted on GitHub Pages · © 2025 Dan Lougen</p>
+  </div>
+</footer>
+
+<script>
+// === SPECTRAL ANIMATION ===
+(function() {
+  const canvas = document.getElementById('spectralCanvas');
+  const ctx = canvas.getContext('2d');
+  let animId;
+
+  const waves = [];
+  const WAVE_COUNT = 12;
+  const goldBase = [212, 168, 67];
+  const tealBase = [78, 205, 196];
+
+  function resize() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+    canvas.style.width = rect.width + 'px';
+    canvas.style.height = rect.height + 'px';
+  }
+
+  function initWaves() {
+    waves.length = 0;
+    for (let i = 0; i < WAVE_COUNT; i++) {
+      const t = i / (WAVE_COUNT - 1);
+      const color = t < 0.5
+        ? goldBase.map((c, j) => c + (tealBase[j] - c) * (t * 2))
+        : tealBase.map((c, j) => goldBase[j] + (c - goldBase[j]) * ((1 - t) * 2));
+      waves.push({
+        freq: 0.5 + Math.random() * 2.5,
+        amp: 0.15 + Math.random() * 0.35,
+        phase: Math.random() * Math.PI * 2,
+        speed: 0.3 + Math.random() * 0.8,
+        yOffset: 0.15 + t * 0.7,
+        color: color,
+        alpha: 0.25 + Math.random() * 0.35,
+        lineWidth: 1 + Math.random() * 1.5
+      });
+    }
+  }
+
+  function draw(time) {
+    const w = canvas.width / (window.devicePixelRatio || 1);
+    const h = canvas.height / (window.devicePixelRatio || 1);
+
+    ctx.clearRect(0, 0, w, h);
+
+    // subtle grid
+    ctx.strokeStyle = 'rgba(26, 29, 42, 0.6)';
+    ctx.lineWidth = 0.5;
+    const gridSize = 40;
+    for (let x = gridSize; x < w; x += gridSize) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+    }
+    for (let y = gridSize; y < h; y += gridSize) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+    }
+
+    const t = time * 0.001;
+
+    for (const wave of waves) {
+      ctx.beginPath();
+      ctx.strokeStyle = `rgba(${wave.color[0]|0}, ${wave.color[1]|0}, ${wave.color[2]|0}, ${wave.alpha})`;
+      ctx.lineWidth = wave.lineWidth;
+
+      const baseY = h * wave.yOffset;
+      const amp = h * wave.amp * 0.3;
+
+      for (let x = 0; x <= w; x += 2) {
+        const nx = x / w;
+        const y = baseY +
+          Math.sin(nx * wave.freq * Math.PI * 2 + t * wave.speed + wave.phase) * amp +
+          Math.sin(nx * wave.freq * 1.7 * Math.PI * 2 + t * wave.speed * 0.6 + wave.phase * 1.3) * amp * 0.3;
+
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      // glow pass
+      ctx.strokeStyle = `rgba(${wave.color[0]|0}, ${wave.color[1]|0}, ${wave.color[2]|0}, ${wave.alpha * 0.15})`;
+      ctx.lineWidth = wave.lineWidth + 4;
+      ctx.stroke();
+    }
+
+    animId = requestAnimationFrame(draw);
+  }
+
+  resize();
+  initWaves();
+  animId = requestAnimationFrame(draw);
+
+  window.addEventListener('resize', () => {
+    resize();
+    initWaves();
+  });
+
+  // Pause when not visible
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      cancelAnimationFrame(animId);
+    } else {
+      animId = requestAnimationFrame(draw);
+    }
+  });
+})();
+
+// === SCROLL REVEAL ===
+(function() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+})();
+</script>
+</body>
+</html>
