@@ -11,6 +11,8 @@
 <meta property="og:description" content="Post-training research, agent infrastructure, open-weight models. SABER · NSC-ACE · BOREAL · SelfTrace.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://djlougen.github.io/">
+<meta property="og:image" content="https://djlougen.github.io/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2307080c'/%3E%3Cpath d='M4 20 C8 12 11 24 16 16 S24 8 28 14' stroke='%23d4a843' stroke-width='2.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -715,6 +717,53 @@ dialog#palette[open] { animation: palette-in 0.22s var(--ease-out); }
 }
 
 /* ============================================================
+   HERO ENTRANCE
+   ============================================================ */
+.hero-kicker { animation: rise 0.9s var(--ease-out) 0.05s backwards; }
+.hero h1 { animation: rise 0.9s var(--ease-out) 0.16s backwards; }
+.hero-ticker { animation: rise 0.9s var(--ease-out) 0.3s backwards; }
+.hero-badges { animation: rise 0.9s var(--ease-out) 0.42s backwards; }
+.stat-bar { animation: rise 0.9s var(--ease-out) 0.55s backwards; }
+#gl { animation: fade-in 1.8s ease 0.2s backwards; }
+@keyframes rise { from { opacity: 0; transform: translateY(26px); } }
+@keyframes fade-in { from { opacity: 0; } }
+
+/* ============================================================
+   RESEARCH MINI-VIZ
+   ============================================================ */
+.viz { width: 100%; height: 72px; display: block; margin: -4px 0 20px; }
+
+/* ============================================================
+   CURSOR RING
+   ============================================================ */
+#cursor {
+  position: fixed; left: 0; top: 0;
+  width: 26px; height: 26px;
+  border: 1px solid rgba(212,168,67,0.5); border-radius: 50%;
+  pointer-events: none; z-index: 998; opacity: 0;
+  transition: opacity 0.4s, width 0.25s, height 0.25s, border-color 0.25s;
+  will-change: transform;
+}
+#cursor.on-link { width: 44px; height: 44px; border-color: rgba(78,205,196,0.75); }
+@media (hover: none) { #cursor { display: none; } }
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+#toast {
+  position: fixed; bottom: 30px; left: 50%; z-index: 1001;
+  transform: translate(-50%, 14px);
+  font-family: var(--mono); font-size: 12.5px; color: var(--gold);
+  background: var(--surface); border: 1px solid rgba(212,168,67,0.35);
+  border-radius: 8px; padding: 11px 20px;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s var(--ease-out);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  max-width: 90vw; text-align: center;
+}
+#toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ============================================================
    RESPONSIVE
    ============================================================ */
 @media (max-width: 920px) {
@@ -816,13 +865,14 @@ dialog#palette[open] { animation: palette-in 0.22s var(--ease-out); }
 <section id="research">
   <div class="container">
     <div class="section-head reveal">
-      <p class="section-label"><span class="idx">01</span> Research</p>
+      <p class="section-label"><span class="idx">01</span> <span data-scramble>Research</span></p>
       <h2 class="section-title">Methods &amp; <em>Architecture</em></h2>
     </div>
     <div class="research-grid">
       <article class="research-card spot reveal" style="--d:0s">
         <span class="glyph">λ ∿ Σ</span>
-        <h3>SABER</h3>
+        <canvas class="viz" data-viz="saber" aria-hidden="true"></canvas>
+        <h3 data-scramble>SABER</h3>
         <p class="tagline">Spectral Analysis-Based Entanglement Resolution</p>
         <p class="body">CCA-based surgical refusal editing in post-trained models. Decomposes refusal behaviors into spectral components, enabling precise editing without collateral capability loss. Applied across Qwen, Ornstein, and Harmonic model families.</p>
         <div class="links">
@@ -831,7 +881,8 @@ dialog#palette[open] { animation: palette-in 0.22s var(--ease-out); }
       </article>
       <article class="research-card spot reveal" style="--d:0.1s">
         <span class="glyph">∇ ⊕ θ</span>
-        <h3>NSC-ACE</h3>
+        <canvas class="viz" data-viz="nsc" aria-hidden="true"></canvas>
+        <h3 data-scramble>NSC-ACE</h3>
         <p class="tagline">GRPO + Latent Steering Vectors</p>
         <p class="body">Neural Steering via Controlled Activation — Contextual Embedding. Combines Group Relative Policy Optimization with latent steering vectors for improved instruction-following and controllability in open-weight models.</p>
         <div class="links">
@@ -840,7 +891,8 @@ dialog#palette[open] { animation: palette-in 0.22s var(--ease-out); }
       </article>
       <article class="research-card spot reveal" style="--d:0.2s">
         <span class="glyph">Δ ◬ ∞</span>
-        <h3>BOREAL</h3>
+        <canvas class="viz" data-viz="boreal" aria-hidden="true"></canvas>
+        <h3 data-scramble>BOREAL</h3>
         <p class="tagline">From-Scratch Pretraining · DeltaNet Hybrid</p>
         <p class="body">Building foundation models from the ground up with DeltaNet hybrid architecture. Scaling path: 250M → 2B → 10B-MoE. Focused on efficient attention mechanisms and novel training curricula for open-weight pretraining.</p>
         <div class="links">
@@ -855,7 +907,7 @@ dialog#palette[open] { animation: palette-in 0.22s var(--ease-out); }
 <section id="selftrace">
   <div class="container">
     <div class="section-head reveal">
-      <p class="section-label"><span class="idx">02</span> Product</p>
+      <p class="section-label"><span class="idx">02</span> <span data-scramble>Product</span></p>
       <h2 class="section-title">Watch agents <em>think</em></h2>
     </div>
     <div class="selftrace reveal">
@@ -921,7 +973,7 @@ dialog#palette[open] { animation: palette-in 0.22s var(--ease-out); }
 <section id="models">
   <div class="container">
     <div class="section-head reveal">
-      <p class="section-label"><span class="idx">03</span> Models</p>
+      <p class="section-label"><span class="idx">03</span> <span data-scramble>Models</span></p>
       <h2 class="section-title">Open-weight <em>releases</em></h2>
     </div>
     <div class="models-grid">
@@ -1029,12 +1081,12 @@ dialog#palette[open] { animation: palette-in 0.22s var(--ease-out); }
 <section id="infrastructure">
   <div class="container">
     <div class="section-head reveal">
-      <p class="section-label"><span class="idx">04</span> Infrastructure</p>
+      <p class="section-label"><span class="idx">04</span> <span data-scramble>Infrastructure</span></p>
       <h2 class="section-title">The <em>stack</em></h2>
     </div>
     <div class="infra-diagram reveal">
       <div class="infra-root">
-        <h3>HiveStack</h3>
+        <h3 data-scramble>HiveStack</h3>
         <p>Agent orchestration — distributed inference &amp; training pipelines</p>
       </div>
       <div class="infra-connector" aria-hidden="true">
@@ -1043,19 +1095,19 @@ dialog#palette[open] { animation: palette-in 0.22s var(--ease-out); }
       </div>
       <div class="infra-children">
         <article class="infra-card spot">
-          <h4>busyBee-cpu</h4>
+          <h4 data-scramble>busyBee-cpu</h4>
           <p>High-throughput routing engine for distributed agent workloads. Lock-free concurrent request handling.</p>
           <div class="infra-metric">2.06M</div>
           <div class="infra-metric-label">Routes / sec</div>
         </article>
         <article class="infra-card spot">
-          <h4>honey-comb</h4>
+          <h4 data-scramble>honey-comb</h4>
           <p>Extreme compression for model artifacts and agent state. Purpose-built for GGUF and safetensor payloads.</p>
           <div class="infra-metric">803×</div>
           <div class="infra-metric-label">Compression ratio</div>
         </article>
         <article class="infra-card spot">
-          <h4>Rust-Brain</h4>
+          <h4 data-scramble>Rust-Brain</h4>
           <p>Persistent memory backend with .rbmem binary format. Zero-copy deserialization for agent context windows.</p>
           <div class="infra-metric">315K</div>
           <div class="infra-metric-label">Writes / sec</div>
@@ -1069,7 +1121,7 @@ dialog#palette[open] { animation: palette-in 0.22s var(--ease-out); }
 <section id="datasets">
   <div class="container">
     <div class="section-head reveal">
-      <p class="section-label"><span class="idx">05</span> Datasets</p>
+      <p class="section-label"><span class="idx">05</span> <span data-scramble>Datasets</span></p>
       <h2 class="section-title">Curated <em>data</em></h2>
     </div>
     <div class="ledger reveal">
@@ -1117,7 +1169,7 @@ dialog#palette[open] { animation: palette-in 0.22s var(--ease-out); }
 <section id="connect">
   <div class="container connect-section">
     <div class="section-head reveal">
-      <p class="section-label">06 · Connect</p>
+      <p class="section-label">06 · <span data-scramble>Connect</span></p>
       <h2 class="section-title">Get in <em>touch</em></h2>
     </div>
     <div class="connect-links reveal">
@@ -1140,7 +1192,7 @@ dialog#palette[open] { animation: palette-in 0.22s var(--ease-out); }
 <!-- FOOTER -->
 <footer>
   <div class="container">
-    <p>Vanilla HTML · CSS · JS · WebGL — no frameworks, no build step ·
+    <p><span id="clock">TOR --:--:--</span> · Vanilla HTML · CSS · JS · WebGL — no frameworks, no build step ·
       <a href="https://github.com/DJLougen/DJLougen.github.io" target="_blank" rel="noopener">view source</a>
       · © 2026 Dan Lougen</p>
   </div>
@@ -1159,6 +1211,9 @@ dialog#palette[open] { animation: palette-in 0.22s var(--ease-out); }
     <span><kbd>esc</kbd> close</span>
   </div>
 </dialog>
+
+<div id="cursor" aria-hidden="true"></div>
+<div id="toast" role="status" aria-live="polite"></div>
 
 <script>
 (function () {
@@ -1181,6 +1236,8 @@ const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
     uniform vec2 uMouse;
     uniform float uAspect;
     uniform float uDpr;
+    uniform float uScroll;
+    uniform mediump float uBoost; // shared with FS — precision must match
     varying float vFade;
     varying float vMix;
 
@@ -1189,12 +1246,14 @@ const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     void main() {
       vec3 p = aPos;
-      float t = uTime * 0.32;
+      float t = uTime * (0.32 + uBoost * 0.6);
       // spherical-harmonic-style breathing displacement
       float d = 0.34 * sin(3.0 * p.x + t * 1.6 + aSeed * 6.2831)
               + 0.27 * sin(4.0 * p.y - t * 1.25 + aSeed * 3.1)
               + 0.22 * sin(5.0 * p.z + t * 1.05);
       p *= 1.0 + 0.38 * d;
+      // spectral decomposition on scroll — particles disperse and fade
+      p *= 1.0 + uScroll * (0.9 + aSeed * 1.1);
       // slow rotation, tilted by pointer
       p = rotX(sin(t * 0.14) * 0.22 + uMouse.y * 0.35)
         * (rotY(t * 0.22 + uMouse.x * 0.55) * p);
@@ -1209,22 +1268,29 @@ const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
       xy += normalize(dm + 0.0001) * 0.10 * exp(-md * 9.0);
       gl_Position = vec4(xy, 0.0, 1.0);
       gl_PointSize = (1.4 + 2.0 * (0.5 + 0.5 * d)) * (2.6 / z) * uDpr;
-      vFade = clamp(1.55 - z * 0.36, 0.05, 1.0);
+      vFade = clamp(1.55 - z * 0.36, 0.05, 1.0) * (1.0 - uScroll * 0.85);
       vMix = clamp(0.5 + 0.62 * d, 0.0, 1.0);
     }`;
 
   const FRAG = `
     precision mediump float;
+    uniform float uLine;
+    uniform float uBoost;
     varying float vFade;
     varying float vMix;
     void main() {
+      vec3 teal = vec3(0.306, 0.804, 0.769);
+      vec3 gold = vec3(0.851, 0.690, 0.310);
+      vec3 col = mix(teal, gold, vMix);
+      col = mix(col, vec3(0.93, 0.37, 0.30), uBoost * 0.55);
+      if (uLine > 0.5) {
+        gl_FragColor = vec4(col, 0.04 * vFade);
+        return;
+      }
       vec2 uv = gl_PointCoord * 2.0 - 1.0;
       float r2 = dot(uv, uv);
       if (r2 > 1.0) discard;
       float a = (1.0 - r2) * (1.0 - r2);
-      vec3 teal = vec3(0.306, 0.804, 0.769);
-      vec3 gold = vec3(0.851, 0.690, 0.310);
-      vec3 col = mix(teal, gold, vMix);
       gl_FragColor = vec4(col, a * vFade * 0.8);
     }`;
 
@@ -1274,10 +1340,22 @@ const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
   attrib('aPos', pos, 3);
   attrib('aSeed', seed, 1);
 
+  // filament lines between spiral near-neighbours (89 is the fibonacci
+  // index offset that lands closest on this lattice density)
+  const OFF = 89;
+  const lineIdx = [];
+  for (let i = 0; i < N - OFF; i += 3) lineIdx.push(i, i + OFF);
+  const idxBuf = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, idxBuf);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(lineIdx), gl.STATIC_DRAW);
+
   const uTime = gl.getUniformLocation(prog, 'uTime');
   const uMouse = gl.getUniformLocation(prog, 'uMouse');
   const uAspect = gl.getUniformLocation(prog, 'uAspect');
   const uDpr = gl.getUniformLocation(prog, 'uDpr');
+  const uScroll = gl.getUniformLocation(prog, 'uScroll');
+  const uBoost = gl.getUniformLocation(prog, 'uBoost');
+  const uLine = gl.getUniformLocation(prog, 'uLine');
 
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE); // additive glow
@@ -1296,11 +1374,15 @@ const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
   window.addEventListener('resize', resize);
 
   let mx = 0, my = 0, tmx = 0, tmy = 0;
+  let scrollT = 0, scrollCur = 0, boostT = 0, boostCur = 0;
   if (!REDUCED) {
     window.addEventListener('pointermove', (e) => {
       const r = canvas.getBoundingClientRect();
       tmx = ((e.clientX - r.left) / r.width) * 2 - 1;
       tmy = -(((e.clientY - r.top) / r.height) * 2 - 1);
+    }, { passive: true });
+    window.addEventListener('scroll', () => {
+      scrollT = Math.min(scrollY / (innerHeight * 0.9), 1);
     }, { passive: true });
   }
 
@@ -1309,15 +1391,29 @@ const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
     raf = null;
     mx += (tmx - mx) * 0.05;
     my += (tmy - my) * 0.05;
+    scrollCur += (scrollT - scrollCur) * 0.09;
+    boostCur += (boostT - boostCur) * 0.04;
     gl.clearColor(0, 0, 0, 0);
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.uniform1f(uTime, t * 0.001);
     gl.uniform2f(uMouse, mx, my);
     gl.uniform1f(uAspect, aspect);
     gl.uniform1f(uDpr, dpr);
+    gl.uniform1f(uScroll, scrollCur);
+    gl.uniform1f(uBoost, boostCur);
+    gl.uniform1f(uLine, 1);
+    gl.drawElements(gl.LINES, lineIdx.length, gl.UNSIGNED_SHORT, 0);
+    gl.uniform1f(uLine, 0);
     gl.drawArrays(gl.POINTS, 0, N);
     if (!REDUCED && visible && !document.hidden) raf = requestAnimationFrame(frame);
   }
+  window.__manifold = {
+    overclock() {
+      boostT = 1;
+      setTimeout(() => { boostT = 0; }, 6000);
+      start();
+    }
+  };
   function start() { if (!raf) raf = requestAnimationFrame(frame); }
   start(); // reduced-motion renders a single static frame
 
@@ -1345,10 +1441,29 @@ if (!CSS.supports('animation-timeline: scroll()')) {
 /* ============================================================
    SCROLL REVEAL
    ============================================================ */
+const SCR_CHARS = '▖▘▝▗░▒<>/\\|=+*#abcdefghjkmnpqrstuvwxyz0123456789';
+function scramble(el) {
+  if (REDUCED || el.dataset.done) return;
+  el.dataset.done = '1';
+  const final = el.textContent;
+  const t0 = performance.now(), dur = 480 + final.length * 26;
+  (function tick(now) {
+    const p = Math.min((now - t0) / dur, 1);
+    const fixed = Math.floor(final.length * p);
+    let out = final.slice(0, fixed);
+    for (let i = fixed; i < final.length; i++) {
+      out += final[i] === ' ' ? ' ' : SCR_CHARS[(Math.random() * SCR_CHARS.length) | 0];
+    }
+    el.textContent = out;
+    if (p < 1) requestAnimationFrame(tick);
+  })(t0);
+}
+
 const revealIO = new IntersectionObserver((entries) => {
   entries.forEach((e) => {
     if (e.isIntersecting) {
       e.target.classList.add('visible');
+      e.target.querySelectorAll('[data-scramble]').forEach(scramble);
       revealIO.unobserve(e.target);
     }
   });
@@ -1401,6 +1516,176 @@ if (!REDUCED && matchMedia('(hover: hover)').matches) {
     }, { passive: true });
   });
 }
+
+/* ============================================================
+   RESEARCH MINI-VIZ — each method gets a living diagram
+   ============================================================ */
+(function () {
+  const C = (rgb, a) => 'rgba(' + rgb + ',' + a + ')';
+  const GOLD = '212,168,67', TEAL = '78,205,196', RED = '232,86,74';
+
+  // SABER — composite waveform decomposing into spectral components
+  function drawSaber(ctx, w, h, t) {
+    ctx.clearRect(0, 0, w, h);
+    const mid = h / 2;
+    const sep = (0.5 - 0.5 * Math.cos(t * 0.7)) * h * 0.3;
+    const comps = [
+      { f: 2.1, a: 9, sp: 1.3, c: GOLD },
+      { f: 3.7, a: 6, sp: -0.9, c: TEAL },
+      { f: 5.3, a: 4, sp: 0.6, c: RED }
+    ];
+    comps.forEach((cmp, i) => {
+      ctx.beginPath();
+      ctx.strokeStyle = C(cmp.c, 0.75);
+      ctx.lineWidth = 1.2;
+      const off = (i - 1) * sep;
+      for (let x = 0; x <= w; x += 2) {
+        const y = mid + off + Math.sin((x / w) * cmp.f * 6.283 + t * cmp.sp) * cmp.a;
+        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    });
+  }
+
+  // NSC-ACE — vector field bending toward a roaming steering attractor
+  function drawNSC(ctx, w, h, t) {
+    ctx.clearRect(0, 0, w, h);
+    const ax = w * (0.5 + 0.38 * Math.cos(t * 0.5));
+    const ay = h * (0.5 + 0.3 * Math.sin(t * 0.8));
+    const gx = 16, gy = 4;
+    for (let i = 0; i < gx; i++) {
+      for (let j = 0; j < gy; j++) {
+        const x = (i + 0.5) * w / gx, y = (j + 0.5) * h / gy;
+        const dx = ax - x, dy = ay - y;
+        const d2 = dx * dx + dy * dy;
+        const infl = Math.exp(-d2 / 3600);
+        const ang = (1 - infl) * 0.3 * Math.sin(t * 0.6 + x * 0.02)
+                  + infl * Math.atan2(dy, dx);
+        const len = 4.5 + infl * 5;
+        ctx.beginPath();
+        ctx.strokeStyle = C(TEAL, 0.22 + 0.6 * infl);
+        ctx.lineWidth = 1.1;
+        ctx.moveTo(x - Math.cos(ang) * len, y - Math.sin(ang) * len);
+        ctx.lineTo(x + Math.cos(ang) * len, y + Math.sin(ang) * len);
+        ctx.stroke();
+      }
+    }
+    ctx.beginPath();
+    ctx.fillStyle = C(GOLD, 0.95);
+    ctx.shadowColor = C(GOLD, 0.9);
+    ctx.shadowBlur = 9;
+    ctx.arc(ax, ay, 2.6, 0, 6.283);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+
+  // BOREAL — branching scaling-tree growing 250M → 2B → 10B
+  function drawBoreal(ctx, w, h, t) {
+    ctx.clearRect(0, 0, w, h);
+    const p = Math.min(((t * 0.22) % 1.4) / 1.0, 1);
+    function branch(x, y, ang, len, depth, t0) {
+      const lp = Math.min(Math.max((p - t0) / 0.18, 0), 1);
+      if (lp <= 0) return;
+      const ex = x + Math.cos(ang) * len * lp;
+      const ey = y + Math.sin(ang) * len * lp;
+      ctx.beginPath();
+      ctx.strokeStyle = depth < 2 ? C(GOLD, 0.8 - depth * 0.1) : C(TEAL, 0.72 - depth * 0.09);
+      ctx.lineWidth = Math.max(2.1 - depth * 0.4, 0.5);
+      ctx.moveTo(x, y);
+      ctx.lineTo(ex, ey);
+      ctx.stroke();
+      if (depth < 5 && lp >= 1) {
+        const spread = 0.5 + 0.1 * Math.sin(t * 0.9 + depth);
+        branch(ex, ey, ang + spread * 0.62, len * 0.72, depth + 1, t0 + 0.155);
+        branch(ex, ey, ang - spread * 0.5, len * 0.74, depth + 1, t0 + 0.155);
+      }
+    }
+    branch(6, h * 0.56, -0.04, w * 0.21, 0, 0);
+  }
+
+  const vizMap = { saber: drawSaber, nsc: drawNSC, boreal: drawBoreal };
+
+  document.querySelectorAll('.viz').forEach((canvas) => {
+    const draw = vizMap[canvas.dataset.viz];
+    if (!draw) return;
+    const ctx = canvas.getContext('2d');
+    let w, h, raf = null, vis = false;
+    function resize() {
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      w = canvas.clientWidth; h = canvas.clientHeight;
+      canvas.width = w * dpr; canvas.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    resize();
+    addEventListener('resize', resize);
+    function loop(t) {
+      raf = null;
+      draw(ctx, w, h, t * 0.001);
+      if (vis && !REDUCED && !document.hidden) raf = requestAnimationFrame(loop);
+    }
+    new IntersectionObserver(([e]) => {
+      vis = e.isIntersecting;
+      if (vis && !raf) raf = requestAnimationFrame(loop);
+    }).observe(canvas);
+  });
+})();
+
+/* ============================================================
+   CURSOR RING + MAGNETIC BUTTONS (desktop only)
+   ============================================================ */
+if (matchMedia('(hover: hover)').matches && !REDUCED) {
+  const cur = document.getElementById('cursor');
+  let x = -100, y = -100, cx = -100, cy = -100, shown = false;
+  addEventListener('pointermove', (e) => {
+    x = e.clientX; y = e.clientY;
+    if (!shown) { cur.style.opacity = '1'; shown = true; }
+    cur.classList.toggle('on-link', !!e.target.closest('a, button, .spot, input, .ledger-row'));
+  }, { passive: true });
+  (function loop() {
+    cx += (x - cx) * 0.16;
+    cy += (y - cy) * 0.16;
+    cur.style.transform = 'translate(' + cx + 'px,' + cy + 'px) translate(-50%,-50%)';
+    requestAnimationFrame(loop);
+  })();
+
+  document.querySelectorAll('.connect-btn, .selftrace-cta').forEach((btn) => {
+    let r = null;
+    btn.addEventListener('pointerenter', () => { r = btn.getBoundingClientRect(); });
+    btn.addEventListener('pointermove', (e) => {
+      if (!r) return;
+      const dx = e.clientX - r.left - r.width / 2;
+      const dy = e.clientY - r.top - r.height / 2;
+      btn.style.transform = 'translate(' + (dx * 0.16) + 'px,' + (dy * 0.32) + 'px)';
+    });
+    btn.addEventListener('pointerleave', () => { btn.style.transform = ''; r = null; });
+  });
+}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+const toastEl = document.getElementById('toast');
+let toastTimer;
+function showToast(msg) {
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove('show'), 3400);
+}
+
+/* ============================================================
+   FOOTER CLOCK
+   ============================================================ */
+(function () {
+  const clock = document.getElementById('clock');
+  function tick() {
+    clock.textContent = 'TOR ' + new Date().toLocaleTimeString('en-CA', {
+      timeZone: 'America/Toronto', hour12: false
+    });
+  }
+  tick();
+  setInterval(tick, 1000);
+})();
 
 /* ============================================================
    HERO TICKER
@@ -1464,6 +1749,18 @@ if (!REDUCED && matchMedia('(hover: hover)').matches) {
     document.querySelector(hash).scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth' });
   }
 
+  const EGGS = {
+    'whoami': 'dan lougen — gestalt labs, toronto',
+    'sudo': 'permission denied — you are not root on this manifold',
+    'rm -rf /': 'refusal vector intact. SABER holds.',
+    'help': 'try: whoami · overclock · sudo · rm -rf /',
+    'overclock': () => {
+      scrollTo({ top: 0, behavior: REDUCED ? 'auto' : 'smooth' });
+      if (window.__manifold) window.__manifold.overclock();
+      return 'manifold overclocked — spectral flux at 300% for 6s';
+    }
+  };
+
   let filtered = items, active = 0;
 
   function render() {
@@ -1500,7 +1797,14 @@ if (!REDUCED && matchMedia('(hover: hover)').matches) {
   dialog.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowDown') { e.preventDefault(); active = Math.min(active + 1, filtered.length - 1); paint(); }
     else if (e.key === 'ArrowUp') { e.preventDefault(); active = Math.max(active - 1, 0); paint(); }
-    else if (e.key === 'Enter' && filtered[active]) { e.preventDefault(); filtered[active].go(); dialog.close(); }
+    else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (filtered[active]) { filtered[active].go(); dialog.close(); }
+      else {
+        const egg = EGGS[input.value.trim().toLowerCase()];
+        if (egg) { dialog.close(); showToast(typeof egg === 'function' ? egg() : egg); }
+      }
+    }
   });
   dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
 
